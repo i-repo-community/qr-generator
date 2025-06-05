@@ -58,7 +58,6 @@
                 <h3 class="font-semibold text-orange-600 mb-1">📱 活用メリット</h3>
                 <ul class="list-disc list-inside mb-3 space-y-1">
                     <li><strong>印刷したQRを現場事務所等に掲示してアイレポ起動！</strong></li>
-                    <li><strong>初期設定の効率化</strong>：端末ごとの設定ミスを防止</li>
                     <li><strong>帳票呼び出しの時短</strong>：現場で即座に帳票を開ける</li>
                 </ul>
                 <!-- ボックス群をラップしてレスポンシブに -->
@@ -218,6 +217,7 @@
                                                     <option value="200">小（200px）</option>
                                                     <option value="256" selected>中（256px）</option>
                                                     <option value="320">大（320px）</option>
+                                                    <option value="512">特大（512px）</option>
                                                 </select>
                                             </div>
                                             <div class="mb-4" id="qrLevelRow">
@@ -251,7 +251,7 @@
                                     <div class="border rounded-xl overflow-hidden mb-4">
                                         <button type="button" id="toggleDefidClusterAdvanced"
                                             class="w-full flex justify-between items-center px-4 py-3 bg-orange-100 hover:bg-orange-200 transition text-orange-800 focus:outline-none">
-                                            <span>定義から作成する用クラスター値（iPadのみ）</span>
+                                            <span>定義から作成する用クラスター値</span>
                                             <svg id="defidClusterChevron" class="w-5 h-5 transition-transform"
                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -262,17 +262,30 @@
                                             style="display:none;">
                                             <div class="flex items-center mb-2">
                                                 <span
-                                                    class="text-xs text-orange-700 font-semibold">定義から作成する用クラスター値（iPadのみ）</span>
+                                                    class="text-xs text-orange-700 font-semibold">定義から作成する用クラスター値</span>
                                             </div>
-                                            <div class="text-xs text-gray-600 mb-2">
+                                            <div class="text-xs text-gray-600 mb-2 flex items-center gap-1">
                                                 [[クラスター名]=[入力値]]
-                                                複数指定可<br>※iPadのみ<br>このQRで帳票を開いたとき、指定したクラスターに値を自動セットします。<br>・[クラスター名]、[入力値]ともにUTF8+URLエンコード必須
+                                                複数指定可このQRで帳票を開いたとき、指定したクラスターに値を自動セットします。
+
                                             </div>
+                                            <div class="text-base font-semibold mb-2 text-blue-700">【ご注意】QRコードのデータ量上限
+                                            </div>
+                                            <div class="text-xs text-gray-700 mb-2">
+                                                QRコードにはデータ量の上限があります。<br>
+                                                入力内容が多すぎると「code length overflow」エラーが出てQRコードが生成できません。
+                                            </div>
+                                            <ul class="list-disc pl-5 text-xs text-gray-700 mb-2">
+                                                <li>エラー訂正レベルを下げる（L推奨）</li>
+                                                <li>クラスター値やURLを短くする</li>
+                                            </ul>
+                                            <div class="text-xs text-gray-700 mb-2">
+                                                クラスター名や値に日本語（全角文字）を多用すると、QRコードの容量制限にすぐ達してしまいます。英数字を使うなど、データ量を抑える工夫をしてください。
+                                            </div>
+                                            <div class="text-xs text-gray-500">などで対応してください。</div>
                                             <div id="defidClusterRows"></div>
                                             <button type="button" id="addDefidClusterRow"
                                                 class="mt-2 px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs">＋行を追加</button>
-                                            <button type="button" id="generateDefidClusterQR"
-                                                class="ml-2 mt-2 px-3 py-1 bg-primary hover:bg-primary-dark text-white rounded text-xs font-semibold">クラスター値付きQRを生成</button>
                                         </div>
                                     </div>
                                     <!-- 帳票・定義ローカルDL -->
@@ -359,6 +372,7 @@
             <p class="text-secondary text-sm">© 2025 QR作成くん - Powered by 現場帳票カイゼン部</p>
         </div>
     </footer>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
@@ -785,6 +799,45 @@
             modeRepid.addEventListener('change', updateDefidClusterAdvanced);
             modeLaunch.addEventListener('change', updateDefidClusterAdvanced);
             updateDefidClusterAdvanced();
+
+            // --- defid-cluster-advanced 行追加・削除 ---
+            const defidClusterRows = document.getElementById('defidClusterRows');
+            const addDefidClusterRow = document.getElementById('addDefidClusterRow');
+            function createDefidClusterRow(name = '', value = '') {
+                const row = document.createElement('div');
+                row.className = 'flex items-center space-x-2 mb-2';
+                row.innerHTML = `
+                    <input type="text" placeholder="クラスター名" value="${name}" class="defid-cluster-name px-4 py-2 border rounded w-1/2 text-base">
+                    =
+                    <input type="text" placeholder="値" value="${value}" class="defid-cluster-value px-4 py-2 border rounded w-1/2 text-base">
+                    <button type="button" class="remove-defid-cluster-row text-red-500 text-sm">削除</button>
+                `;
+                row.querySelector('.remove-defid-cluster-row').onclick = () => row.remove();
+                return row;
+            }
+            if (addDefidClusterRow) {
+                addDefidClusterRow.addEventListener('click', function () {
+                    defidClusterRows.appendChild(createDefidClusterRow());
+                });
+            }
+
+            // --- defid-cluster-advanced ツールチップ ---
+            const defidClusterInfoBtn = document.getElementById('defidClusterInfoBtn');
+            const defidClusterModalBg = document.getElementById('defidClusterModalBg');
+            const defidClusterModalClose = document.getElementById('defidClusterModalClose');
+            if (defidClusterInfoBtn && defidClusterModalBg && defidClusterModalClose) {
+                defidClusterInfoBtn.addEventListener('click', function () {
+                    defidClusterModalBg.classList.remove('hidden');
+                });
+                defidClusterModalClose.addEventListener('click', function () {
+                    defidClusterModalBg.classList.add('hidden');
+                });
+                defidClusterModalBg.addEventListener('click', function (e) {
+                    if (e.target === defidClusterModalBg) {
+                        defidClusterModalBg.classList.add('hidden');
+                    }
+                });
+            }
         });
 
         function showMessage(message, type) {
