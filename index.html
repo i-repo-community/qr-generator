@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR作成くん</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': 'rgb(234 88 12 / <alpha-value>)', // オレンジ
+                        'primary-dark': 'rgb(194 65 12 / <alpha-value>)', // 濃いオレンジ
+                        'accent': '#fbbf24',
+                        'secondary': '#64748b',
+                        'bg-primary': 'rgb(255 247 237 / <alpha-value>)', // クリーム
+                        'bg-secondary': '#e2e8f0'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        #qrcode {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, rgb(234 88 12 / 1) 0%, #fbbf24 100%);
+        }
+
+        .card-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+
+<body class="bg-bg-primary min-h-screen">
+    <!-- Header Banner -->
+    <div class="py-8 mb-8">
+        <div class="container mx-auto flex justify-center">
+            <img src="https://community.dl-asobica.com/public/uploads/community/image_main/demo-cimtops/028d4e63-0759-4321-81ae-0d47ac22c196.png"
+                alt="QR作成くん" class="max-w-full w-full sm:w-2/3">
+        </div>
+    </div>
+
+    <!-- 説明文書 -->
+    <div class="max-w-3xl mx-auto mb-8">
+        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 sm:p-6 rounded-r-lg">
+            <div class="prose text-sm sm:text-base text-gray-700">
+                <p class="mb-2">
+                    <strong>i-Reporter URLスキームのQRコード生成くん</strong>は帳票や定義を現場で簡単に開くためのQRコードを生成できるツールです。
+                </p>
+                <h3 class="font-semibold text-orange-600 mb-1">📱 活用メリット</h3>
+                <ul class="list-disc list-inside mb-3 space-y-1">
+                    <li><strong>印刷したQRを現場事務所等に掲示してアイレポ起動！</strong></li>
+                    <li><strong>初期設定の効率化</strong>：端末ごとの設定ミスを防止</li>
+                    <li><strong>帳票呼び出しの時短</strong>：現場で即座に帳票を開ける</li>
+                </ul>
+                <!-- ボックス群をラップしてレスポンシブに -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-3">
+
+                    <!-- セキュリティ・プライバシー -->
+                    <div class="flex-1 bg-green-50 border border-green-200 rounded p-3">
+                        <h4 class="font-semibold text-green-700 mb-2">🔒 セキュリティ・プライバシー</h4>
+                        <ul class="text-xs space-y-1">
+                            <li>🏠 <strong>完全ローカル実行</strong>：すべての処理がブラウザ内で完結</li>
+                            <li>🚫 <strong>サーバー送信なし</strong>：入力したデータは一切外部に送信されません</li>
+                            <li>📥 <strong>HTMLダウンロード可能</strong>：<a href="https://github.com/i-repo-community/qr-up"
+                                    target="_blank" rel="noopener noreferrer"
+                                    class="text-green-600 hover:text-green-800 underline">GitHubから</a>HTMLファイルをダウンロードしてオフライン利用可能
+                            </li>
+                            <li>✏️ <strong>カスタマイズ自由</strong>：HTMLファイルを編集して独自の初期設定項目を追加可能</li>
+                            <li>🔍 <strong>オープンソース</strong>：コードが完全に公開されています</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 免責事項・コントリビュートもwrap -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-orange-600 mb-1">⚠️ 免責事項</h3>
+                        <div class="text-xs bg-yellow-50 border border-yellow-200 rounded p-2 mb-3">
+                            <p class="mb-1">
+                                このツールは<strong>コミュニティ有志によるオープンソースソフトウェア</strong>です。
+                            </p>
+                            <p>
+                                利用により生じたいかなる損害についても、開発者・コミュニティは一切の責任を負いません。自己責任でご利用ください。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex-1 bg-purple-50 border border-purple-200 rounded p-3 mb-3">
+                        <h4 class="font-semibold text-purple-700 mb-2">🤝 コントリビュート歓迎！</h4>
+                        <div class="text-xs space-y-1">
+                            <p>このツールの改善にご協力ください：</p>
+                            <ul class="list-disc list-inside ml-2 space-y-1">
+                                <li><strong>機能追加・バグ修正</strong>：プルリクエストをお送りください</li>
+                                <li><strong>不具合報告</strong>：GitHubのIssueでお知らせください</li>
+                                <li><strong>要望・提案</strong>：新機能のアイデアをお聞かせください</li>
+                                <li><strong>ドキュメント改善</strong>：説明の追加・修正も大歓迎</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto max-w-6xl px-4">
+        <div class="flex flex-col md:flex-row gap-8 md:items-stretch">
+            <!-- 入力フォーム -->
+            <div class="w-full md:w-2/5 flex">
+                <div class="max-w-lg w-full bg-white p-8 sm:p-10 rounded-2xl card-shadow h-full flex flex-col">
+                    <!-- Logo/Icon Area -->
+                    <div class="text-center mb-8">
+                        <h2 class="text-xl sm:text-2xl font-semibold text-primary mb-2">QRコード生成</h2>
+                        <p class="text-secondary text-sm">必要な情報を入力してQRコードを生成してください</p>
+                    </div>
+                    <form class="space-y-6" id="qrForm">
+                        <div class="mb-2">
+                            <div class="flex items-center space-x-6 mb-3">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" class="form-radio text-primary" name="mode" value="defid"
+                                        id="mode-defid" checked>
+                                    <span class="ml-2 text-sm font-semibold text-gray-700">定義ID</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" class="form-radio text-primary" name="mode" value="repid"
+                                        id="mode-repid">
+                                    <span class="ml-2 text-sm font-semibold text-gray-700">帳票ID</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" class="form-radio text-primary" name="mode" value="launch"
+                                        id="mode-launch">
+                                    <span class="ml-2 text-sm font-semibold text-gray-700">起動のみ</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="defid-input">
+                            <label for="id" class="block text-sm font-semibold text-gray-700 mb-3">定義ID</label>
+                            <input
+                                class="w-full px-4 py-3 text-sm sm:text-base border-2 border-bg-secondary rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-200"
+                                id="id" name="id" type="number" placeholder="定義IDを入力してください">
+                            <p id="defidHelp" class="text-xs text-gray-500 mt-1">i-Reporterで採番された定義IDを入力してください（半角数字）
+                            </p>
+                        </div>
+                        <div id="repid-input" style="display:none;">
+                            <label for="repid" class="block text-sm font-semibold text-gray-700 mb-3">帳票ID</label>
+                            <input
+                                class="w-full px-4 py-3 text-sm sm:text-base border-2 border-bg-secondary rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-200"
+                                id="repid" name="repid" type="number" placeholder="帳票IDを入力してください">
+                            <p id="repidHelp" class="text-xs text-gray-500 mt-1">i-Reporterで採番された帳票IDを入力してください（半角数字）
+                            </p>
+                        </div>
+                        <div id="launchOnlySection" style="display:none;">
+                            <button type="button" id="generateLaunchQR"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl transition duration-300 text-sm mt-2">i-Reporter起動QRを生成</button>
+                        </div>
+                        <div class="mb-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">対象OS</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" class="form-radio text-primary" name="os" value="ios"
+                                        id="os-ios" checked>
+                                    <span class="ml-2 text-sm text-gray-700">iOS</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" class="form-radio text-primary" name="os" value="windows"
+                                        id="os-windows">
+                                    <span class="ml-2 text-sm text-gray-700">Windows</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="serverUrlSection">
+                            <label for="serverUrl"
+                                class="block text-sm font-semibold text-gray-700 mb-3">サーバーURLを入力してください</label>
+                            <input id="serverUrl" name="serverUrl" type="text"
+                                placeholder="https://example.com/ConMasWeb/Rests/ConMasIReporter.aspx"
+                                class="w-full px-4 py-3 text-sm sm:text-base border-2 border-bg-secondary rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-200 bg-white">
+                            <p id="serverUrlHelp" class="text-xs text-gray-500 mt-1">i-ReporterのサーバーURLを入力してください（例:
+                                https://example.com/ConMasWeb/Rests/ConMasIReporter.aspx）</p>
+                        </div>
+                        <div id="formError" class="hidden text-red-700 bg-red-100 rounded-lg px-4 py-2 text-sm"></div>
+
+                        <!-- 上級者向けアドバンス機能全体をまとめて折りたたみ -->
+                        <div class="border rounded-2xl overflow-hidden mt-8">
+                            <button type="button" id="toggleExpert"
+                                class="w-full flex justify-between items-center px-4 py-4 bg-bg-secondary hover:bg-bg-primary transition text-gray-700 focus:outline-none">
+                                <span>上級者向け（アドバンス機能）</span>
+                                <svg id="expertChevron" class="w-6 h-6 transition-transform" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div id="expertPanel" style="display:none;">
+                                <div class="p-0 sm:p-2">
+                                    <!-- QRコードカスタマイズ -->
+                                    <div class="border rounded-xl overflow-hidden mb-4">
+                                        <button type="button" id="toggleAdvanced"
+                                            class="w-full flex justify-between items-center px-4 py-3 bg-blue-100 hover:bg-blue-200 transition text-blue-800 focus:outline-none">
+                                            <span>QRコードカスタマイズ</span>
+                                            <svg id="advancedChevron" class="w-5 h-5 transition-transform" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        <div id="advancedPanel" class="px-4 py-4 bg-blue-50" style="display:none;">
+                                            <div class="mb-4" id="qrSizeRow">
+                                                <label
+                                                    class="block text-sm font-semibold text-gray-700 mb-2">サイズ</label>
+                                                <select id="qrSize"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                                    <option value="200">小（200px）</option>
+                                                    <option value="256" selected>中（256px）</option>
+                                                    <option value="320">大（320px）</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-4" id="qrLevelRow">
+                                                <label
+                                                    class="block text-sm font-semibold text-gray-700 mb-2">エラー訂正レベル</label>
+                                                <select id="qrLevel"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                                    <option value="L">L（7%）</option>
+                                                    <option value="M">M（15%）</option>
+                                                    <option value="Q">Q（25%）</option>
+                                                    <option value="H" selected>H（30%）</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-4" id="qrColorDarkRow">
+                                                <label
+                                                    class="block text-sm font-semibold text-gray-700 mb-2">QRカラー</label>
+                                                <input type="color" id="qrColorDark" value="#ea580c"
+                                                    class="w-12 h-8 p-0 border-0 bg-transparent">
+                                                <span class="ml-2 text-xs text-gray-500">プライマリー</span>
+                                            </div>
+                                            <div id="qrColorLightRow">
+                                                <label
+                                                    class="block text-sm font-semibold text-gray-700 mb-2">背景カラー</label>
+                                                <input type="color" id="qrColorLight" value="#ffffff"
+                                                    class="w-12 h-8 p-0 border-0 bg-transparent">
+                                                <span class="ml-2 text-xs text-gray-500">背景</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- クラスター値入力（iPad） -->
+                                    <div class="border rounded-xl overflow-hidden mb-4">
+                                        <button type="button" id="toggleDefidClusterAdvanced"
+                                            class="w-full flex justify-between items-center px-4 py-3 bg-orange-100 hover:bg-orange-200 transition text-orange-800 focus:outline-none">
+                                            <span>定義から作成する用クラスター値（iPadのみ）</span>
+                                            <svg id="defidClusterChevron" class="w-5 h-5 transition-transform"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        <div id="defid-cluster-advanced" class="px-4 py-4 bg-orange-50"
+                                            style="display:none;">
+                                            <div class="flex items-center mb-2">
+                                                <span
+                                                    class="text-xs text-orange-700 font-semibold">定義から作成する用クラスター値（iPadのみ）</span>
+                                            </div>
+                                            <div class="text-xs text-gray-600 mb-2">
+                                                [[クラスター名]=[入力値]]
+                                                複数指定可<br>※iPadのみ<br>このQRで帳票を開いたとき、指定したクラスターに値を自動セットします。<br>・[クラスター名]、[入力値]ともにUTF8+URLエンコード必須
+                                            </div>
+                                            <div id="defidClusterRows"></div>
+                                            <button type="button" id="addDefidClusterRow"
+                                                class="mt-2 px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs">＋行を追加</button>
+                                            <button type="button" id="generateDefidClusterQR"
+                                                class="ml-2 mt-2 px-3 py-1 bg-primary hover:bg-primary-dark text-white rounded text-xs font-semibold">クラスター値付きQRを生成</button>
+                                        </div>
+                                    </div>
+                                    <!-- 帳票・定義ローカルDL -->
+                                    <div class="border rounded-xl overflow-hidden">
+                                        <button type="button" id="toggleDownloadAdvanced"
+                                            class="w-full flex justify-between items-center px-4 py-3 bg-purple-100 hover:bg-purple-200 transition text-purple-800 focus:outline-none">
+                                            <span>帳票・定義ローカルDL</span>
+                                            <svg id="downloadChevron" class="w-5 h-5 transition-transform" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        <div id="downloadPanel" class="px-4 py-4 bg-purple-50" style="display:none;">
+                                            <div class="text-xs text-purple-700 mb-2">
+                                                ※この機能はiOS版i-Reporterのみ対応です。IDはカンマ区切りで複数指定可。authは不要です。</div>
+                                            <div class="mb-3">
+                                                <label
+                                                    class="block text-sm font-semibold text-gray-700 mb-1">帳票ID（カンマ区切り）</label>
+                                                <input type="text" id="downloadRepid" placeholder="例: 123,456,789"
+                                                    class="w-full px-4 py-2 border rounded text-base">
+                                                <button type="button" id="generateDownloadReportQR"
+                                                    class="mt-2 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 px-4 rounded-xl transition duration-300 text-sm">帳票DL
+                                                    QRを生成</button>
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-semibold text-gray-700 mb-1">定義ID（カンマ区切り）</label>
+                                                <input type="text" id="downloadDefid" placeholder="例: 111,222"
+                                                    class="w-full px-4 py-2 border rounded text-base">
+                                                <button type="button" id="generateDownloadDefQR"
+                                                    class="mt-2 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 px-4 rounded-xl transition duration-300 text-sm">定義DL
+                                                    QRを生成</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 pt-4">
+                            <button type="button" id="generateButton"
+                                class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 px-6 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg text-sm sm:text-base">
+                                <span class="flex items-center justify-center" id="buttonLabel">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    この定義から開くQR
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- QR表示エリア -->
+            <div class="w-full md:w-3/5 flex">
+                <div class="flex-1 text-center max-w-full bg-white rounded-2xl p-8 card-shadow h-full flex flex-col justify-center"
+                    style="min-height:320px;">
+                    <div id="result" class="text-sm sm:text-base text-gray-700 mb-6 font-medium"></div>
+                    <div id="qrcode"
+                        class="flex justify-center items-center bg-gray-50 rounded-xl p-6 min-h-[256px] md:min-h-[320px]">
+                    </div>
+                    <div class="mt-4 flex flex-col items-center">
+                        <label for="qrText" class="block text-xs text-gray-600 mb-1">生成された文字列</label>
+                        <div class="flex w-full max-w-lg">
+                            <textarea id="qrText" readonly rows="2"
+                                class="flex-1 px-3 py-2 border rounded-l-md text-xs bg-gray-100 focus:outline-none resize-none"></textarea>
+                            <button type="button" id="copyQRText"
+                                class="px-3 py-2 bg-primary hover:bg-primary-dark text-white rounded-r-md text-xs font-semibold">コピー</button>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-xs text-gray-500">
+                        <p>QRコードを右クリックして「名前を付けて画像を保存」で保存できます</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-16 py-8 bg-gray-50 border-t border-gray-200">
+        <div class="container mx-auto max-w-6xl px-4 text-center">
+            <p class="text-secondary text-sm">© 2025 QR作成くん - Powered by 現場帳票カイゼン部</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleExpert = document.getElementById('toggleExpert');
+            const expertPanel = document.getElementById('expertPanel');
+            const expertChevron = document.getElementById('expertChevron');
+            let expertOpen = false;
+            toggleExpert.addEventListener('click', function () {
+                expertOpen = !expertOpen;
+                expertPanel.style.display = expertOpen ? '' : 'none';
+                expertChevron.style.transform = expertOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+
+            // トグル切り替え
+            const modeDefid = document.getElementById('mode-defid');
+            const modeRepid = document.getElementById('mode-repid');
+            const modeLaunch = document.getElementById('mode-launch');
+            const defidInput = document.getElementById('defid-input');
+            const repidInput = document.getElementById('repid-input');
+            const launchOnlySection = document.getElementById('launchOnlySection');
+            const buttonLabel = document.getElementById('buttonLabel');
+            const formError = document.getElementById('formError');
+            const defidHelp = document.getElementById('defidHelp');
+            const repidHelp = document.getElementById('repidHelp');
+            const qrSizeRow = document.getElementById('qrSizeRow');
+            const qrLevelRow = document.getElementById('qrLevelRow');
+            const qrColorDarkRow = document.getElementById('qrColorDarkRow');
+            const qrColorLightRow = document.getElementById('qrColorLightRow');
+            const generateButton = document.getElementById('generateButton');
+            const clusterAccordion = document.querySelector('.border.rounded-xl.overflow-hidden.mb-4 button#toggleClusterAdvanced')?.parentElement;
+            const downloadAccordion = document.querySelector('.border.rounded-xl.overflow-hidden button#toggleDownloadAdvanced')?.parentElement;
+
+            function updateMode() {
+                const serverUrlSection = document.getElementById('serverUrlSection');
+                if (modeDefid.checked) {
+                    if (defidInput) defidInput.style.display = '';
+                    if (repidInput) repidInput.style.display = 'none';
+                    if (launchOnlySection) launchOnlySection.style.display = 'none';
+                    if (serverUrlSection) serverUrlSection.style.display = '';
+                    qrSizeRow.style.display = '';
+                    qrLevelRow.style.display = '';
+                    qrColorDarkRow.style.display = '';
+                    qrColorLightRow.style.display = '';
+                    if (generateButton) generateButton.style.display = '';
+                    if (clusterAccordion) clusterAccordion.style.display = '';
+                    if (downloadAccordion) downloadAccordion.style.display = '';
+                } else if (modeRepid.checked) {
+                    if (defidInput) defidInput.style.display = 'none';
+                    if (repidInput) repidInput.style.display = '';
+                    if (launchOnlySection) launchOnlySection.style.display = 'none';
+                    if (serverUrlSection) serverUrlSection.style.display = '';
+                    qrSizeRow.style.display = '';
+                    qrLevelRow.style.display = '';
+                    qrColorDarkRow.style.display = '';
+                    qrColorLightRow.style.display = '';
+                    if (generateButton) generateButton.style.display = '';
+                    if (clusterAccordion) clusterAccordion.style.display = '';
+                    if (downloadAccordion) downloadAccordion.style.display = '';
+                } else {
+                    if (defidInput) defidInput.style.display = 'none';
+                    if (repidInput) repidInput.style.display = 'none';
+                    if (launchOnlySection) launchOnlySection.style.display = '';
+                    if (serverUrlSection) serverUrlSection.style.display = 'none';
+                    qrSizeRow.style.display = '';
+                    qrLevelRow.style.display = '';
+                    qrColorDarkRow.style.display = '';
+                    qrColorLightRow.style.display = '';
+                    if (generateButton) generateButton.style.display = 'none';
+                    if (clusterAccordion) clusterAccordion.style.display = 'none';
+                    if (downloadAccordion) downloadAccordion.style.display = 'none';
+                }
+            }
+            modeDefid.addEventListener('change', updateMode);
+            modeRepid.addEventListener('change', updateMode);
+            modeLaunch.addEventListener('change', updateMode);
+            updateMode();
+
+            // バリデーション関数
+            function validateForm() {
+                const server = document.getElementById('serverUrl').value.trim();
+                const id = document.getElementById('id').value.trim();
+                const repid = document.getElementById('repid').value.trim();
+                const isDefid = modeDefid.checked;
+                const isRepid = modeRepid.checked;
+                let errors = [];
+                // サーバーURL必須・形式
+                if (!modeLaunch.checked) {
+                    if (!server) {
+                        errors.push('サーバーURLを入力してください。');
+                    } else if (!/^https?:\/\/.+/.test(server)) {
+                        errors.push('サーバーURLの形式が正しくありません。');
+                    }
+                }
+                // 定義ID/帳票ID必須・正の整数
+                if (isDefid) {
+                    if (!id) {
+                        errors.push('定義IDを入力してください。');
+                    } else if (!/^\d+$/.test(id) || parseInt(id) <= 0) {
+                        errors.push('定義IDは正の整数で入力してください。');
+                    }
+                } else if (isRepid) {
+                    if (!repid) {
+                        errors.push('帳票IDを入力してください。');
+                    } else if (!/^\d+$/.test(repid) || parseInt(repid) <= 0) {
+                        errors.push('帳票IDは正の整数で入力してください。');
+                    }
+                }
+                return errors;
+            }
+
+            // QR生成
+            document.getElementById('generateButton').addEventListener('click', function () {
+                formError.classList.add('hidden');
+                formError.innerHTML = '';
+                const errors = validateForm();
+                if (errors.length > 0) {
+                    formError.innerHTML = errors.map(e => `<div>・${e}</div>`).join('');
+                    formError.classList.remove('hidden');
+                    return;
+                }
+                const server = document.getElementById('serverUrl').value.trim();
+                const id = document.getElementById('id').value.trim();
+                const repid = document.getElementById('repid').value.trim();
+                const qrcodeDiv = document.getElementById('qrcode');
+                const isDefid = modeDefid.checked;
+                // OS選択
+                const os = document.querySelector('input[name="os"]:checked').value;
+                // カスタマイズ値取得
+                const qrSize = parseInt(document.getElementById('qrSize').value, 10);
+                const qrLevel = document.getElementById('qrLevel').value;
+                const qrColorDark = document.getElementById('qrColorDark').value;
+                const qrColorLight = document.getElementById('qrColorLight').value;
+                qrcodeDiv.innerHTML = '';
+                let data = '';
+                if (isDefid) {
+                    if (os === 'ios') {
+                        // クラスター値パラメータ取得
+                        let clusterParams = '';
+                        if (defidClusterAdvanced && defidClusterAdvanced.style.display !== 'none') {
+                            const pairs = Array.from(defidClusterRows.querySelectorAll('.flex')).map(row => {
+                                const name = row.querySelector('.defid-cluster-name').value.trim();
+                                const value = row.querySelector('.defid-cluster-value').value.trim();
+                                return name && value ? `&${encodeURIComponent(name)}=${encodeURIComponent(value)}` : '';
+                            }).filter(Boolean).join('');
+                            clusterParams = pairs;
+                        }
+                        data = `jp.co.cimtops.ireporter.createreport:defid=${id}&server=${encodeURIComponent(server)}${clusterParams}`;
+                    } else {
+                        data = `ireporter.createreport:defid=${id}`;
+                    }
+                } else {
+                    if (os === 'ios') {
+                        data = `jp.co.cimtops.ireporter.openreport:repid=${repid}&server=${encodeURIComponent(server)}`;
+                    } else {
+                        data = `ireporter.openreport:repid=${repid}`;
+                    }
+                }
+                new QRCode(qrcodeDiv, {
+                    text: data,
+                    width: qrSize,
+                    height: qrSize,
+                    colorDark: qrColorDark,
+                    colorLight: qrColorLight,
+                    correctLevel: QRCode.CorrectLevel[qrLevel]
+                });
+                setQRText(data);
+                showMessage('QRコードが生成されました！', 'success');
+            });
+
+            // クラスター値入力アドバンス（iOSのみ）
+            const osIos = document.getElementById('os-ios');
+            const osWindows = document.getElementById('os-windows');
+            const toggleClusterAdvanced = document.getElementById('toggleClusterAdvanced');
+            const clusterPanel = document.getElementById('clusterPanel');
+            const clusterChevron = document.getElementById('clusterChevron');
+            const clusterRows = document.getElementById('clusterRows');
+            const addClusterRow = document.getElementById('addClusterRow');
+            const generateClusterQR = document.getElementById('generateClusterQR');
+            let clusterOpen = false;
+            function updateClusterAdvanced() {
+                // iOS以外のときはパネル自体を閉じて非表示
+                if (!toggleClusterAdvanced || !clusterPanel || !clusterChevron) return;
+                if (osIos.checked) {
+                    toggleClusterAdvanced.disabled = false;
+                    toggleClusterAdvanced.classList.remove('opacity-50', 'pointer-events-none');
+                } else {
+                    clusterPanel.style.display = 'none';
+                    clusterChevron.style.transform = 'rotate(0deg)';
+                    clusterOpen = false;
+                    toggleClusterAdvanced.disabled = true;
+                    toggleClusterAdvanced.classList.add('opacity-50', 'pointer-events-none');
+                }
+            }
+            osIos.addEventListener('change', updateClusterAdvanced);
+            osWindows.addEventListener('change', updateClusterAdvanced);
+            updateClusterAdvanced();
+            if (toggleClusterAdvanced) {
+                toggleClusterAdvanced.addEventListener('click', function () {
+                    if (osIos.checked) {
+                        clusterOpen = !clusterOpen;
+                        clusterPanel.style.display = clusterOpen ? '' : 'none';
+                        clusterChevron.style.transform = clusterOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+                    }
+                });
+            }
+            // クラスター行追加・削除
+            function createClusterRow(name = '', value = '') {
+                const row = document.createElement('div');
+                row.className = 'flex items-center space-x-2 mb-2';
+                row.innerHTML = `<input type="text" placeholder="クラスター名" value="${name}" class="cluster-name px-4 py-2 border rounded w-1/2 text-base"> = <input type="text" placeholder="値" value="${value}" class="cluster-value px-4 py-2 border rounded w-1/2 text-base"> <button type="button" class="remove-cluster-row text-red-500 text-sm">削除</button>`;
+                row.querySelector('.remove-cluster-row').onclick = () => row.remove();
+                return row;
+            }
+            if (addClusterRow) {
+                addClusterRow.addEventListener('click', function () {
+                    clusterRows.appendChild(createClusterRow());
+                });
+            }
+            if (generateClusterQR) {
+                generateClusterQR.addEventListener('click', function () {
+                    // クラスター名・値ペア取得
+                    const pairs = Array.from(clusterRows.querySelectorAll('.flex')).map(row => {
+                        const name = row.querySelector('.cluster-name').value.trim();
+                        const value = row.querySelector('.cluster-value').value.trim();
+                        return name && value ? `${encodeURIComponent(name)}=${encodeURIComponent(value)}` : null;
+                    }).filter(Boolean);
+                    if (pairs.length === 0) {
+                        showMessage('クラスター名と値を1つ以上入力してください', 'error');
+                        return;
+                    }
+                    const qrcodeDiv = document.getElementById('qrcode');
+                    const qrSize = parseInt(document.getElementById('qrSize').value, 10);
+                    const qrLevel = document.getElementById('qrLevel').value;
+                    const qrColorDark = document.getElementById('qrColorDark').value;
+                    const qrColorLight = document.getElementById('qrColorLight').value;
+                    qrcodeDiv.innerHTML = '';
+                    const data = `jp.co.cimtops.ireporter.setcluster:${pairs.join('&')}`;
+                    new QRCode(qrcodeDiv, {
+                        text: data,
+                        width: qrSize,
+                        height: qrSize,
+                        colorDark: qrColorDark,
+                        colorLight: qrColorLight,
+                        correctLevel: QRCode.CorrectLevel[qrLevel]
+                    });
+                    setQRText(data);
+                    showMessage('クラスター値QRコードが生成されました！', 'success');
+                });
+            }
+
+            // 帳票/定義ローカルDLアドバンス（iOSのみ）
+            const downloadAdvanced = document.getElementById('downloadAdvanced');
+            const toggleDownloadAdvanced = document.getElementById('toggleDownloadAdvanced');
+            const downloadPanel = document.getElementById('downloadPanel');
+            const downloadChevron = document.getElementById('downloadChevron');
+            const generateDownloadReportQR = document.getElementById('generateDownloadReportQR');
+            const generateDownloadDefQR = document.getElementById('generateDownloadDefQR');
+            const downloadRepid = document.getElementById('downloadRepid');
+            const downloadDefid = document.getElementById('downloadDefid');
+            let downloadOpen = false;
+            function updateDownloadAdvanced() {
+                if (osIos.checked) {
+                    toggleDownloadAdvanced.disabled = false;
+                    toggleDownloadAdvanced.classList.remove('opacity-50', 'pointer-events-none');
+                } else {
+                    downloadPanel.style.display = 'none';
+                    downloadChevron.style.transform = 'rotate(0deg)';
+                    downloadOpen = false;
+                    toggleDownloadAdvanced.disabled = true;
+                    toggleDownloadAdvanced.classList.add('opacity-50', 'pointer-events-none');
+                }
+            }
+            osIos.addEventListener('change', updateDownloadAdvanced);
+            osWindows.addEventListener('change', updateDownloadAdvanced);
+            updateDownloadAdvanced();
+            if (toggleDownloadAdvanced) {
+                toggleDownloadAdvanced.addEventListener('click', function () {
+                    if (osIos.checked) {
+                        downloadOpen = !downloadOpen;
+                        downloadPanel.style.display = downloadOpen ? '' : 'none';
+                        downloadChevron.style.transform = downloadOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+                    }
+                });
+            }
+            if (generateDownloadReportQR) {
+                generateDownloadReportQR.addEventListener('click', function () {
+                    const repids = downloadRepid.value.trim().replace(/\s+/g, '');
+                    if (!repids) {
+                        showMessage('帳票IDを1つ以上入力してください', 'error');
+                        return;
+                    }
+                    const qrcodeDiv = document.getElementById('qrcode');
+                    const qrSize = parseInt(document.getElementById('qrSize').value, 10);
+                    const qrLevel = document.getElementById('qrLevel').value;
+                    const qrColorDark = document.getElementById('qrColorDark').value;
+                    const qrColorLight = document.getElementById('qrColorLight').value;
+                    qrcodeDiv.innerHTML = '';
+                    const data = `jp.co.cimtops.ireporter.downloadreport:repid=${repids}`;
+                    new QRCode(qrcodeDiv, {
+                        text: data,
+                        width: qrSize,
+                        height: qrSize,
+                        colorDark: qrColorDark,
+                        colorLight: qrColorLight,
+                        correctLevel: QRCode.CorrectLevel[qrLevel]
+                    });
+                    setQRText(data);
+                    showMessage('帳票DL用QRコードが生成されました！', 'success');
+                });
+            }
+            if (generateDownloadDefQR) {
+                generateDownloadDefQR.addEventListener('click', function () {
+                    const defids = downloadDefid.value.trim().replace(/\s+/g, '');
+                    if (!defids) {
+                        showMessage('定義IDを1つ以上入力してください', 'error');
+                        return;
+                    }
+                    const qrcodeDiv = document.getElementById('qrcode');
+                    const qrSize = parseInt(document.getElementById('qrSize').value, 10);
+                    const qrLevel = document.getElementById('qrLevel').value;
+                    const qrColorDark = document.getElementById('qrColorDark').value;
+                    const qrColorLight = document.getElementById('qrColorLight').value;
+                    qrcodeDiv.innerHTML = '';
+                    const data = `jp.co.cimtops.ireporter.downloaddefinition:defid=${defids}`;
+                    new QRCode(qrcodeDiv, {
+                        text: data,
+                        width: qrSize,
+                        height: qrSize,
+                        colorDark: qrColorDark,
+                        colorLight: qrColorLight,
+                        correctLevel: QRCode.CorrectLevel[qrLevel]
+                    });
+                    setQRText(data);
+                    showMessage('定義DL用QRコードが生成されました！', 'success');
+                });
+            }
+
+            // 上級者向けアコーディオン
+            const toggleAdvanced = document.getElementById('toggleAdvanced');
+            const advancedPanel = document.getElementById('advancedPanel');
+            const advancedChevron = document.getElementById('advancedChevron');
+            let advancedOpen = false;
+            toggleAdvanced.addEventListener('click', function () {
+                advancedOpen = !advancedOpen;
+                advancedPanel.style.display = advancedOpen ? '' : 'none';
+                advancedChevron.style.transform = advancedOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+
+            const generateLaunchQR = document.getElementById('generateLaunchQR');
+            if (generateLaunchQR) {
+                generateLaunchQR.addEventListener('click', function () {
+                    const os = document.querySelector('input[name="os"]:checked').value;
+                    const qrcodeDiv = document.getElementById('qrcode');
+                    const qrSize = parseInt(document.getElementById('qrSize').value, 10);
+                    const qrLevel = document.getElementById('qrLevel').value;
+                    const qrColorDark = document.getElementById('qrColorDark').value;
+                    const qrColorLight = document.getElementById('qrColorLight').value;
+                    qrcodeDiv.innerHTML = '';
+                    let data = '';
+                    if (os === 'ios') {
+                        data = 'jp.co.cimtops.ireporter://open';
+                    } else {
+                        data = 'ireporter://open';
+                    }
+                    new QRCode(qrcodeDiv, {
+                        text: data,
+                        width: qrSize,
+                        height: qrSize,
+                        colorDark: qrColorDark,
+                        colorLight: qrColorLight,
+                        correctLevel: QRCode.CorrectLevel[qrLevel]
+                    });
+                    setQRText(data);
+                    showMessage('i-Reporter起動用QRコードが生成されました！', 'success');
+                });
+            }
+
+            // 新しい関数を追加
+            function setQRText(text) {
+                const qrText = document.getElementById('qrText');
+                if (qrText) qrText.value = text;
+            }
+            const copyQRTextBtn = document.getElementById('copyQRText');
+            if (copyQRTextBtn) {
+                copyQRTextBtn.addEventListener('click', function () {
+                    const qrText = document.getElementById('qrText');
+                    if (qrText) {
+                        qrText.select();
+                        document.execCommand('copy');
+                        showMessage('文字列をコピーしました！', 'success');
+                    }
+                });
+            }
+
+            // --- JavaScript: toggle accordion for defid cluster advanced ---
+            const toggleDefidClusterAdvanced = document.getElementById('toggleDefidClusterAdvanced');
+            const defidClusterAdvanced = document.getElementById('defid-cluster-advanced');
+            const defidClusterChevron = document.getElementById('defidClusterChevron');
+            let defidClusterOpen = false;
+            function updateDefidClusterAdvanced() {
+                // iOSかつ定義IDモードのみ有効
+                if (osIos.checked && modeDefid.checked) {
+                    toggleDefidClusterAdvanced.disabled = false;
+                    toggleDefidClusterAdvanced.classList.remove('opacity-50', 'pointer-events-none');
+                } else {
+                    defidClusterAdvanced.style.display = 'none';
+                    defidClusterChevron.style.transform = 'rotate(0deg)';
+                    defidClusterOpen = false;
+                    toggleDefidClusterAdvanced.disabled = true;
+                    toggleDefidClusterAdvanced.classList.add('opacity-50', 'pointer-events-none');
+                }
+            }
+            toggleDefidClusterAdvanced.addEventListener('click', function () {
+                if (osIos.checked && modeDefid.checked) {
+                    defidClusterOpen = !defidClusterOpen;
+                    defidClusterAdvanced.style.display = defidClusterOpen ? '' : 'none';
+                    defidClusterChevron.style.transform = defidClusterOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            });
+            osIos.addEventListener('change', updateDefidClusterAdvanced);
+            osWindows.addEventListener('change', updateDefidClusterAdvanced);
+            modeDefid.addEventListener('change', updateDefidClusterAdvanced);
+            modeRepid.addEventListener('change', updateDefidClusterAdvanced);
+            modeLaunch.addEventListener('change', updateDefidClusterAdvanced);
+            updateDefidClusterAdvanced();
+        });
+
+        function showMessage(message, type) {
+            const result = document.getElementById("result");
+            result.innerHTML = `
+                <div class="inline-flex items-center px-4 py-2 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        ${type === 'success'
+                    ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>'
+                    : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+                }
+                    </svg>
+                    ${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+
+</html>
