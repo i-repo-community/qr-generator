@@ -10,8 +10,9 @@ var Validators = {
    * @returns {string|null} エラーメッセージまたはnull
    */
   validateServerUrl: function (url) {
+    // 空文字列の場合はスキップ（任意項目として扱う）
     if (!url || url.trim() === "") {
-      return QRConfig.messages.error.serverUrlRequired;
+      return null;
     }
     if (!/^https?:\/\/.+/.test(url)) {
       return QRConfig.messages.error.serverUrlInvalid;

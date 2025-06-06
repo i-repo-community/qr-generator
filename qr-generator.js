@@ -77,9 +77,16 @@ var QRGenerator = {
     var data = "";
     if (params.os === "ios") {
       var template = QRConfig.urlSchemes.ios.createReport;
-      data = template
-        .replace("{defid}", params.defId)
-        .replace("{server}", encodeURIComponent(params.serverUrl));
+      if (params.serverUrl) {
+        data = template
+          .replace("{defid}", params.defId)
+          .replace("{server}", encodeURIComponent(params.serverUrl));
+      } else {
+        // &server=ごと除去
+        data = template
+          .replace("&server={server}", "")
+          .replace("{defid}", params.defId);
+      }
 
       // クラスターパラメータを追加
       if (params.clusterParams) {
@@ -106,9 +113,16 @@ var QRGenerator = {
     var data = "";
     if (params.os === "ios") {
       var template = QRConfig.urlSchemes.ios.openReport;
-      data = template
-        .replace("{repid}", params.repId)
-        .replace("{server}", encodeURIComponent(params.serverUrl));
+      if (params.serverUrl) {
+        data = template
+          .replace("{repid}", params.repId)
+          .replace("{server}", encodeURIComponent(params.serverUrl));
+      } else {
+        // &server=ごと除去
+        data = template
+          .replace("&server={server}", "")
+          .replace("{repid}", params.repId);
+      }
     } else {
       var template = QRConfig.urlSchemes.windows.openReport;
       data = template.replace("{repid}", params.repId);
